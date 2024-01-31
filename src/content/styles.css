@@ -1,0 +1,7 @@
+.easy-web-macros-triggering {
+  box-shadow: 0px 0px 0px 2px rgb(239 68 68);
+}
+
+.easy-web-macros-triggered {
+  box-shadow: 0px 0px 0px 2px rgb(239 68 68 / 50%);
+}
