@@ -6,8 +6,10 @@ Google Chrome Extension that will allow an user to record your web actions and r
 
 This extension can listen and record your user events from a web page and re-play them. Here are some quick demos about the extension: 
 
-- [English version demo](https://youtu.be/enPt2N-ZgJY?si=b_uezQGpUReoiEQM)
-- [Spanish version demo](https://youtu.be/98qy0xJYL1s?si=4G7xpJeAeLx-fwww)
+- English version demo
+<iframe width="560" height="315" src="https://www.youtube.com/embed/98qy0xJYL1s?si=81RA0HDG0_0MZE9B" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+- Spanish version demo
+<iframe width="560" height="315" src="https://www.youtube.com/embed/98qy0xJYL1s?si=wpxK5LyUSqAH4dSZ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 > [!NOTE]
 > The currently supported user events include:
