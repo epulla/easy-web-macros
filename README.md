@@ -24,7 +24,7 @@ This extension can listen and record your user events from a web page and re-pla
 
 You'll see the following view when you open the extension for the first time:
 
-[!alt steps_page](assets/steps_page.png)
+![alt steps_page](assets/steps_page.png)
 
 - Record: This button will allow you to start recording your user **Steps** from a web page.
 - Re-play: This button will allow you to re-play your **Steps** from the beginning.
@@ -32,7 +32,7 @@ You'll see the following view when you open the extension for the first time:
 
 If you already have a **Step** recorded (or manually added), you'll see a view like the following:
 
-[!alt steps_page_with_a_step](assets/steps_page_with_a_step.png)
+![alt steps_page_with_a_step](assets/steps_page_with_a_step.png)
 
 On this view, you'll be able to:
 
@@ -43,7 +43,7 @@ On this view, you'll be able to:
 
 If you click the ← (arrow back) button, you'll see all of your **Collections** of **Steps**:
 
-[!alt all_collections_page](assets/all_collections_page.png)
+![alt all_collections_page](assets/all_collections_page.png)
 
 On this page, you will be able to:
 
