@@ -4,7 +4,7 @@ Google Chrome Extension that will allow an user to record your web actions and r
 
 ## What can it do?
 
-This extension can listen and record your user events from a web page and re-play them. Here are some quick demos about the extension: 
+This extension can listen and record your user events from a web page and re-play them. Here are some quick demos about the extension:
 
 - [English version demo](https://youtu.be/enPt2N-ZgJY?si=b_uezQGpUReoiEQM)
 - [Spanish version demo](https://youtu.be/98qy0xJYL1s?si=4G7xpJeAeLx-fwww)
@@ -54,11 +54,27 @@ On this page, you will be able to:
 
 ## Tech stack
 
--   [Svelte](https://svelte.dev/)
--   [TypeScript](https://www.typescriptlang.org/)
--   [Vite](https://vitejs.dev/)
--   [CRXJS Vite Plugin](https://github.com/crxjs/chrome-extension-tools/blob/main/packages/vite-plugin/README.md)
--   [Chrome Extensions Manifest V3](https://developer.chrome.com/docs/extensions/mv3/intro/)
+- [Svelte](https://svelte.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/)
+- [CRXJS Vite Plugin](https://github.com/crxjs/chrome-extension-tools/blob/main/packages/vite-plugin/README.md)
+- [Chrome Extensions Manifest V3](https://developer.chrome.com/docs/extensions/mv3/intro/)
 
 > [!IMPORTANT]
 > This project was made using this [Svelte Chrome Extension Boilerplate](https://github.com/NekitCorp/chrome-extension-svelte-typescript-boilerplate)
+
+## Dev
+
+1. Install the Node dependencies:
+
+```bash
+pnpm install
+```
+
+2. Build the project
+
+```bash
+pnpm build
+```
+
+3. Follow [these steps](https://github.com/NekitCorp/chrome-extension-svelte-typescript-boilerplate?tab=readme-ov-file#load-unpacked-extensions) for installing the extension in your Chrome browser
