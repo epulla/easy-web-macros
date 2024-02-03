@@ -49,6 +49,5 @@ export default defineManifest(async (env) => ({
   },
   permissions: [
     "storage",
-    "downloads",
   ] as chrome.runtime.ManifestPermissions[],
 }));
