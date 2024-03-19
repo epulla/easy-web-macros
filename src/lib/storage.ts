@@ -38,6 +38,9 @@ export const storage = {
     return chrome.storage.local.set(value);
   },
   update: (value: Partial<IStorage>): Promise<void> => {
+    if (value.playStatus === "playing" || value.playStatus === "pending") {
+      log("storage.update", `playStatus: ${value.playStatus}`);
+    }
     return new Promise((resolve, reject) => {
       log("storage.update", value);
       chrome.storage.local.get((data) => {
@@ -106,6 +109,32 @@ export const storage = {
       },
     });
   },
+  updateNumberOfRuns: async (id: string, runs: number) => {
+    const { collections } = await storage.get();
+    const collection = collections[id];
+    await storage.update({
+      collections: {
+        ...collections,
+        [id]: {
+          ...collection,
+          numberOfRuns: runs,
+        },
+      },
+    });
+  },
+  updateDoesLoopInfinitely: async (id: string, doesLoop: boolean) => {
+    const { collections } = await storage.get();
+    const collection = collections[id];
+    await storage.update({
+      collections: {
+        ...collections,
+        [id]: {
+          ...collection,
+          doesLoopInfinitely: doesLoop,
+        },
+      },
+    });
+  },
   // Step functions
   insertStepToCollection: async (id: string, step: Step, index: number) => {
     const { collections } = await storage.get();
@@ -119,6 +148,8 @@ export const storage = {
             name: "New Collection",
             steps: [step],
             delayBetweenSteps: 1000,
+            numberOfRuns: 1,
+            doesLoopInfinitely: false,
           },
         },
       });
@@ -158,6 +189,8 @@ export const storage = {
             name: "New Collection",
             steps: [step],
             delayBetweenSteps: 1000,
+            numberOfRuns: 1,
+            doesLoopInfinitely: false,
           },
         },
       });

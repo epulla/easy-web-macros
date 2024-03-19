@@ -29,6 +29,21 @@
   let activeCollectionId: string;
   let collections: { [key: string]: Collection } = {};
   $: activeCollection = collections[activeCollectionId];
+  // v0.0.2 patch: add numberOfRuns and doesLoopInfinitely (default values) to old collections
+  $: if (activeCollection) {
+    if (activeCollection.numberOfRuns === undefined) {
+      storage.updateNumberOfRuns(activeCollection.id, 1);
+      storage.getCollection(activeCollection.id).then((collection) => {
+        reloadStorageVars();
+      });
+    }
+    if (activeCollection.doesLoopInfinitely === undefined) {
+      storage.updateDoesLoopInfinitely(activeCollection.id, false);
+      storage.getCollection(activeCollection.id).then((collection) => {
+        reloadStorageVars();
+      });
+    }
+  }
 
   let skipIdSearch: boolean;
   $: if (skipIdSearch !== undefined) {
@@ -91,6 +106,7 @@
       playStatus: "playing",
       stepIndex: index,
       isRecording: false,
+      count: 0, // reset count of runs
     });
     await reloadStorageVars();
     await sendActionToContentScript("play");

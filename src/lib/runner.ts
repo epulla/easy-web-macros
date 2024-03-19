@@ -6,7 +6,9 @@ import { lookupElementByXPath } from "./xpath";
 
 export const runSteps = async () => {
   let el;
-  const { collections, stepIndex, activeCollectionId } = await storage.get();
+  const { collections, stepIndex, activeCollectionId, count } =
+    await storage.get();
+  let runCount = count;
   const collection = collections[activeCollectionId];
   let i = stepIndex;
   log("Running steps from index: ", stepIndex);
@@ -31,9 +33,9 @@ export const runSteps = async () => {
       await storage.updateStepStatus("success", activeCollectionId, previousId);
     }
 
-    const { xpath, strategy, value } = step;
+    const { label, xpath, strategy, value } = step;
     log(
-      `Running step:\nxpath: ${xpath}\nstrategy: ${strategy}\nvalue: ${value}`
+      `Running step:\n${label}\nxpath: ${xpath}\nstrategy: ${strategy}\nvalue: ${value}`
     );
     try {
       await storage.updateStepStatus("running", activeCollectionId, step.id);
@@ -62,14 +64,57 @@ export const runSteps = async () => {
       return "error";
     }
 
-    await sleep(50); // wait for the window.onbeforeunload to be called
-
+    await sleep(50); // wait for the window.onbeforeunload to be called for checking if the page has changed
     // if an user event has changed the page, then stop running steps and save the current step index + 1
     // so that the next time the page loads, it will continue running the steps from that index
     // i.e. if the user clicks on a link, then the page will change and the steps will stop running
     if ((await storage.get()).playStatus === "pending") {
       await storage.update({ stepIndex: i + 1 });
       return "pending";
+    }
+
+    // if the last step has been run, then check if the collection should loop infinitely
+    // or if it has run the number of times set by the user
+    if (i === collection.steps.length) {
+      log(
+        "Last step run. Checking if the collection should loop infinitely or has run the number of times set by the user."
+      );
+      runCount++;
+      await storage.update({ count: runCount });
+      i = 0;
+      await storage.update({ stepIndex: 0 });
+      // condition to check if the collection should loop infinitely
+      if (collection.doesLoopInfinitely) {
+        // sleep to listen the user event to stop the loop
+        await sleep(1000);
+        if ((await storage.get()).playStatus === "idle") {
+          i = 0;
+          await storage.update({ stepIndex: i });
+          return "stopped";
+        }
+      } else {
+        // condition to check if the collection has run the number of times set by the user
+        if (runCount === collection.numberOfRuns) {
+          await storage.update({ count: 0 });
+          return "success";
+        } else {
+          await sleep(50); // wait for the window.onbeforeunload to be called for checking if the page has changed
+          // if an user event has changed the page, then stop running steps and save the current step index + 1
+          // so that the next time the page loads, it will continue running the steps from that index
+          // i.e. if the user clicks on a link, then the page will change and the steps will stop running
+          if ((await storage.get()).playStatus === "pending") {
+            await storage.update({ stepIndex: i + 1 });
+            return "pending";
+          }
+          // sleep to listen the user event to stop the loop
+          await sleep(1000);
+          if ((await storage.get()).playStatus === "idle") {
+            await storage.update({ stepIndex: i });
+            await storage.update({ count: 0 });
+            return "stopped";
+          }
+        }
+      }
     }
 
     await sleep(collection.delayBetweenSteps);

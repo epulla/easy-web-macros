@@ -1,10 +1,8 @@
 <script lang="ts">
-  import PlayIcon from "../../components/icons/PlayIcon.svelte";
   import Container from "../../components/layout/Container.svelte";
   import { type Collection } from "../../lib/collection";
   import { storage } from "../../lib/storage";
   import CleanIcon from "../../components/icons/CleanIcon.svelte";
-  import AddIcon from "../../components/icons/AddIcon.svelte";
   import Overlay from "../../components/layout/Overlay.svelte";
   import Modal from "../../components/Modal.svelte";
   import Layout from "../../components/layout/Layout.svelte";
@@ -34,6 +32,19 @@
 
   storage.get().then(({ collections }) => {
     collection = collections[params.id];
+    // v0.0.2 patch: add numberOfRuns and doesLoopInfinitely (default values) to old collections
+    if (collection.numberOfRuns === undefined) {
+      storage.updateNumberOfRuns(collection.id, 1);
+      storage.getCollection(collection.id).then((collection) => {
+        collection = collection;
+      });
+    }
+    if (collection.doesLoopInfinitely === undefined) {
+      storage.updateDoesLoopInfinitely(collection.id, false);
+      storage.getCollection(collection.id).then((collection) => {
+        collection = collection;
+      });
+    }
     log("collection", collection);
   });
 

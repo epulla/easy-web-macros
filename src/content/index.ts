@@ -14,17 +14,12 @@ import { v4 as uuidv4 } from "uuid";
 import "./styles.css";
 import type { Step } from "../lib/step";
 
-// Storage vars
-let storageData: IStorage | undefined = undefined;
-const reloadStorageData = async () => {
-  storageData = await storage.get();
-};
-
 const onScriptLoad = async () => {
   // if page has changed before finishing running a collection, then continue running steps
   log("onScriptLoad");
   const { playStatus, activeCollectionId } = await storage.get();
-  if (playStatus === "pending") {
+  log(playStatus);
+  if (playStatus === "pending" || playStatus === "playing") {
     await storage.update({ playStatus: "playing" });
     await sleep(50);
     const stepsRunStatus = await runSteps();
@@ -35,10 +30,12 @@ const onScriptLoad = async () => {
   if (!activeCollectionId) {
     await storage.update({ activeCollectionId: "default" });
   }
-  await reloadStorageData();
 };
 
-onScriptLoad();
+setTimeout(function () {
+  onScriptLoad();
+}, 1000);
+// window.onload = () => onScriptLoad();
 
 // if page starts to get unloaded, then set a flag to let the content script
 // know that the page has changed so that it can stop running the steps
@@ -48,6 +45,17 @@ window.onbeforeunload = (event) => {
       storage.update({ playStatus: "pending" });
     }
   });
+};
+
+// if the user presses the escape key, then stop running the steps
+window.onkeydown = (event) => {
+  if (event.key === "Escape") {
+    storage.get(["playStatus"]).then(({ playStatus }) => {
+      if (playStatus === "playing" || playStatus === "pending") {
+        storage.update({ playStatus: "idle" });
+      }
+    });
+  }
 };
 
 //// Extension Listeners
@@ -60,10 +68,12 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "play") {
     log("Playing steps from collection:", request.collectionName);
     try {
-      // await storage.update({ playStatus: "playing" });
       const collectionRunStatus = await runSteps();
       log("stepsRunStatus", collectionRunStatus);
-      if (collectionRunStatus === "success") {
+      if (
+        collectionRunStatus === "success" ||
+        collectionRunStatus === "stopped"
+      ) {
         await storage.update({ playStatus: "idle" });
       }
       chrome.runtime.sendMessage({
@@ -80,7 +90,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "printStorage") {
     log("storage from printStorage", await storage.get());
   }
-  await reloadStorageData();
 });
 
 //// Page Listeners
@@ -117,36 +126,37 @@ btns.forEach((btn) => {
   });
 });
 
-const submits = document.querySelectorAll("input[type='submit']");
-submits.forEach((submit) => {
-  submit.addEventListener("click", async (e) => {
-    if ((await storage.get()).isRecording) {
-      // target element xpath extraction
-      const target = e.target as HTMLElement;
-      const path = createXPathFromElement(
-        target,
-        (await storage.get()).skipIdSearch
-      );
-      if (!path) {
-        log("No path found for element", target);
-        return;
-      }
-      await storage.appendStepToCollection(
-        await storage.getActiveCollectionId(),
-        {
-          id: uuidv4(),
-          xpath: path,
-          strategy: "ButtonClick",
-          visibility: "visible",
-          status: "idle",
-          label: (e.target as HTMLElement).innerText
-            ? (e.target as HTMLElement).innerText
-            : (e.target as HTMLElement).id ?? "button",
-        } as Step
-      );
-    }
-  }); 
-})
+// Removed since previous code already covers this
+// const submits = document.querySelectorAll("input[type='submit']");
+// submits.forEach((submit) => {
+//   submit.addEventListener("click", async (e) => {
+//     if ((await storage.get()).isRecording) {
+//       // target element xpath extraction
+//       const target = e.target as HTMLElement;
+//       const path = createXPathFromElement(
+//         target,
+//         (await storage.get()).skipIdSearch
+//       );
+//       if (!path) {
+//         log("No path found for element", target);
+//         return;
+//       }
+//       await storage.appendStepToCollection(
+//         await storage.getActiveCollectionId(),
+//         {
+//           id: uuidv4(),
+//           xpath: path,
+//           strategy: "ButtonClick",
+//           visibility: "visible",
+//           status: "idle",
+//           label: (e.target as HTMLElement).innerText
+//             ? (e.target as HTMLElement).innerText
+//             : (e.target as HTMLElement).id ?? "button",
+//         } as Step
+//       );
+//     }
+//   });
+// })
 
 const inputs = document.querySelectorAll(
   "input[type='text'], input[type='password'], textarea"

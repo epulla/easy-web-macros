@@ -4,12 +4,14 @@
   import StepCard from "../cards/StepCard.svelte";
   import AddIcon from "../icons/AddIcon.svelte";
   import ArrowDownIcon from "../icons/ArrowDownIcon.svelte";
-  import Input from "../Input.svelte";
   import { storage } from "../../lib/storage";
+  import Kbd from "../Kbd.svelte";
 
   export let collection: Collection;
   export let canPlay: boolean = true;
   $: delayBetweenSteps = collection?.delayBetweenSteps;
+  $: numberOfRuns = collection?.numberOfRuns;
+  $: doesLoopInfinitely = collection?.doesLoopInfinitely;
 
   const onDelayBetweenStepsChange = async (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -18,6 +20,23 @@
       return;
     }
     await storage.updateDelayBetweenSteps(collection.id, value);
+  };
+
+  const handleNumberOfRunsChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const value = parseInt(target.value, 10);
+    if (isNaN(value)) {
+      return;
+    }
+    await storage.updateNumberOfRuns(collection.id, value);
+    numberOfRuns = value;
+  };
+
+  const handleDoesLoopInfinitelyChange = async (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const value = target.checked;
+    await storage.updateDoesLoopInfinitely(collection.id, value);
+    doesLoopInfinitely = value;
   };
 
   const dispatch = createEventDispatcher();
@@ -64,6 +83,38 @@
     />
     <p>ms</p>
   </div>
+  <div class="flex gap-2 items-center py-1">
+    <p>Number of loops:</p>
+    <input
+      class="border border-gray-300 rounded py-2 px-4 bg-slate-50 disabled:opacity-50 disabled:bg-gray-200"
+      type="number"
+      name="runs"
+      id="runs"
+      value={numberOfRuns}
+      on:input={handleNumberOfRunsChange}
+      min={1}
+      disabled={doesLoopInfinitely}
+    />
+  </div>
+  <div class="flex gap-2">
+    <input
+      type="checkbox"
+      name="infinite"
+      id="infinite"
+      checked={doesLoopInfinitely}
+      on:change={handleDoesLoopInfinitelyChange}
+    />
+    <p>
+      Infinite Loop? (if you enable this, the 'Number of runs' won't be used)
+    </p>
+  </div>
+  {#if doesLoopInfinitely || numberOfRuns > 1}
+    <div class="flex gap-2 py-3">
+      <p class="font-bold uppercase">
+        Press <Kbd>ESC</Kbd> to stop looping
+      </p>
+    </div>
+  {/if}
   {#each collection.steps as step, i}
     <div class="relative group w-full">
       <StepCard
