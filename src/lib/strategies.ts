@@ -65,6 +65,7 @@ export const strategies = [
         label: "Is confidential?",
         placeholder: "(i.e. password)",
         type: "checkbox",
+        required: false,
       },
     ],
     func: function (nodeEl: Node, value: string): HTMLElement {

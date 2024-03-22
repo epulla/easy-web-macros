@@ -38,17 +38,17 @@ export const storage = {
     return chrome.storage.local.set(value);
   },
   update: (value: Partial<IStorage>): Promise<void> => {
-    if (value.playStatus === "playing" || value.playStatus === "pending") {
-      log("storage.update", `playStatus: ${value.playStatus}`);
-    }
     return new Promise((resolve, reject) => {
-      log("storage.update", value);
       chrome.storage.local.get((data) => {
         chrome.storage.local.set({ ...data, ...value }, () => {
           if (chrome.runtime.lastError) {
             reject(chrome.runtime.lastError);
+            log("error storage.update", chrome.runtime.lastError)
           } else {
             resolve();
+            chrome.storage.local
+              .get()
+              .then(() => log("storage.updated", value));
           }
         });
       });

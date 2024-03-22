@@ -356,14 +356,14 @@
           </select>
 
           {#if strategy}
-            {#each getStrategy(strategy).required as { name, label, placeholder, type }}
+            {#each getStrategy(strategy).required as { name, label, placeholder, type, required }}
               {#if type === "text"}
                 <label for={name}>{label}</label>
-                <Input id={name} {name} {placeholder} {type} required />
+                <Input id={name} {name} {placeholder} {type} required={required ?? true} />
               {:else if type === "checkbox"}
                 <div class="flex gap-2">
                   <label for={name}>{label}</label>
-                  <Input id={name} {name} {type} required />
+                  <Input id={name} {name} {type} required={required ?? true} />
                   <p class="opacity-50">{placeholder}</p>
                 </div>
               {/if}

@@ -1,3 +1,4 @@
+import type { Collection } from "./collection";
 import { log } from "./log";
 import { sleep } from "./sleep";
 import { storage } from "./storage";
@@ -68,56 +69,56 @@ export const runSteps = async () => {
     // if an user event has changed the page, then stop running steps and save the current step index + 1
     // so that the next time the page loads, it will continue running the steps from that index
     // i.e. if the user clicks on a link, then the page will change and the steps will stop running
-    if ((await storage.get()).playStatus === "pending") {
-      await storage.update({ stepIndex: i + 1 });
+    if (localStorage.getItem("easy-web-macros-playStatus") === "pending") {
+      if (i === collection.steps.length) {
+        log("Last step run check when unloading page");
+        let { action } = await lastStepRunAction(collection, runCount);
+        if (action === "break") {
+          break;
+        }
+      } else {
+        await storage.update({ stepIndex: i });
+      }
       return "pending";
     }
 
-    // if the last step has been run, then check if the collection should loop infinitely
-    // or if it has run the number of times set by the user
     if (i === collection.steps.length) {
-      log(
-        "Last step run. Checking if the collection should loop infinitely or has run the number of times set by the user."
-      );
-      runCount++;
-      await storage.update({ count: runCount });
-      i = 0;
-      await storage.update({ stepIndex: 0 });
-      // condition to check if the collection should loop infinitely
-      if (collection.doesLoopInfinitely) {
-        // sleep to listen the user event to stop the loop
-        await sleep(1000);
-        if ((await storage.get()).playStatus === "idle") {
-          i = 0;
-          await storage.update({ stepIndex: i });
-          return "stopped";
-        }
-      } else {
-        // condition to check if the collection has run the number of times set by the user
-        if (runCount === collection.numberOfRuns) {
-          await storage.update({ count: 0 });
-          return "success";
-        } else {
-          await sleep(50); // wait for the window.onbeforeunload to be called for checking if the page has changed
-          // if an user event has changed the page, then stop running steps and save the current step index + 1
-          // so that the next time the page loads, it will continue running the steps from that index
-          // i.e. if the user clicks on a link, then the page will change and the steps will stop running
-          if ((await storage.get()).playStatus === "pending") {
-            await storage.update({ stepIndex: i + 1 });
-            return "pending";
-          }
-          // sleep to listen the user event to stop the loop
-          await sleep(1000);
-          if ((await storage.get()).playStatus === "idle") {
-            await storage.update({ stepIndex: i });
-            await storage.update({ count: 0 });
-            return "stopped";
-          }
-        }
+      log("Last step run check");
+      let { action } = await lastStepRunAction(collection, runCount);
+      if (action === "break") {
+        break;
       }
+    }
+
+    // sleep to listen the user event to stop the loop
+    await sleep(500);
+    if ((await storage.get()).playStatus === "idle") {
+      await storage.update({ stepIndex: i });
+      await storage.update({ count: 0 });
+      return "stopped";
     }
 
     await sleep(collection.delayBetweenSteps);
   }
   return "success";
+};
+
+const lastStepRunAction = async (collection: Collection, runCount: number) => {
+  let _runCount = runCount + 1;
+  if (collection.doesLoopInfinitely) {
+    await storage.update({ count: 0 });
+  } else if (_runCount < collection.numberOfRuns) {
+    await storage.update({ count: _runCount });
+  } else {
+    // break if the collection has no loops left to run
+    await storage.update({ count: 0, stepIndex: 0 });
+    localStorage.setItem("easy-web-macros-playStatus", "idle");
+    return {
+      action: "break",
+    };
+  }
+  await storage.update({ stepIndex: 0 });
+  return {
+    action: "",
+  };
 };

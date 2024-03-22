@@ -17,9 +17,36 @@ import type { Step } from "../lib/step";
 const onScriptLoad = async () => {
   // if page has changed before finishing running a collection, then continue running steps
   log("onScriptLoad");
+  const localStoragePlayStatus = localStorage.getItem(
+    "easy-web-macros-playStatus"
+  );
+  if (localStoragePlayStatus === "idle") {
+    await storage.update({ playStatus: "idle" });
+    localStorage.removeItem("easy-web-macros-playStatus");
+  } else if (localStoragePlayStatus === "pending") {
+    const activeCollection = await storage.getCollection(
+      await storage.getActiveCollectionId()
+    );
+    const activeCollectionStepLength = activeCollection?.steps.length;
+    const doesActiveCollectionHaveAnotherLoop =
+      activeCollection &&
+      ((await storage.get()).count <= activeCollection.numberOfRuns ||
+        activeCollection.doesLoopInfinitely);
+    if (
+      activeCollection &&
+      activeCollectionStepLength &&
+      ((await storage.get()).stepIndex < activeCollectionStepLength ||
+        doesActiveCollectionHaveAnotherLoop)
+    ) {
+      await storage.update({ playStatus: "pending" });
+    } else {
+      await storage.update({ playStatus: "idle" });
+    }
+    localStorage.removeItem("easy-web-macros-playStatus");
+  }
   const { playStatus, activeCollectionId } = await storage.get();
   log(playStatus);
-  if (playStatus === "pending" || playStatus === "playing") {
+  if (playStatus === "pending") {
     await storage.update({ playStatus: "playing" });
     await sleep(50);
     const stepsRunStatus = await runSteps();
@@ -34,15 +61,15 @@ const onScriptLoad = async () => {
 
 setTimeout(function () {
   onScriptLoad();
-}, 1000);
+}, 50);
 // window.onload = () => onScriptLoad();
 
 // if page starts to get unloaded, then set a flag to let the content script
 // know that the page has changed so that it can stop running the steps
 window.onbeforeunload = (event) => {
-  storage.get(["playStatus"]).then(({ playStatus }) => {
+  storage.get().then(({ playStatus }): void => {
     if (playStatus === "playing") {
-      storage.update({ playStatus: "pending" });
+      localStorage.setItem("easy-web-macros-playStatus", "pending");
     }
   });
 };
@@ -75,6 +102,10 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         collectionRunStatus === "stopped"
       ) {
         await storage.update({ playStatus: "idle" });
+      }
+      if (collectionRunStatus === "pending") {
+        await storage.update({ playStatus: "pending" });
+        localStorage.removeItem("easy-web-macros-playStatus");
       }
       chrome.runtime.sendMessage({
         action: "play",
@@ -126,40 +157,39 @@ btns.forEach((btn) => {
   });
 });
 
-// Removed since previous code already covers this
-// const submits = document.querySelectorAll("input[type='submit']");
-// submits.forEach((submit) => {
-//   submit.addEventListener("click", async (e) => {
-//     if ((await storage.get()).isRecording) {
-//       // target element xpath extraction
-//       const target = e.target as HTMLElement;
-//       const path = createXPathFromElement(
-//         target,
-//         (await storage.get()).skipIdSearch
-//       );
-//       if (!path) {
-//         log("No path found for element", target);
-//         return;
-//       }
-//       await storage.appendStepToCollection(
-//         await storage.getActiveCollectionId(),
-//         {
-//           id: uuidv4(),
-//           xpath: path,
-//           strategy: "ButtonClick",
-//           visibility: "visible",
-//           status: "idle",
-//           label: (e.target as HTMLElement).innerText
-//             ? (e.target as HTMLElement).innerText
-//             : (e.target as HTMLElement).id ?? "button",
-//         } as Step
-//       );
-//     }
-//   });
-// })
+const submits = document.querySelectorAll("input[type='submit']");
+submits.forEach((submit) => {
+  submit.addEventListener("click", async (e) => {
+    if ((await storage.get()).isRecording) {
+      // target element xpath extraction
+      const target = e.target as HTMLElement;
+      const path = createXPathFromElement(
+        target,
+        (await storage.get()).skipIdSearch
+      );
+      if (!path) {
+        log("No path found for element", target);
+        return;
+      }
+      await storage.appendStepToCollection(
+        await storage.getActiveCollectionId(),
+        {
+          id: uuidv4(),
+          xpath: path,
+          strategy: "ButtonClick",
+          visibility: "visible",
+          status: "idle",
+          label: (e.target as HTMLElement).innerText
+            ? (e.target as HTMLElement).innerText
+            : (e.target as HTMLElement).id ?? "button",
+        } as Step
+      );
+    }
+  });
+});
 
 const inputs = document.querySelectorAll(
-  "input[type='text'], input[type='password'], textarea"
+  "input[type='text'], input[type='password'], textarea, input[type='email'], input[type='number'], input[type='tel'], input[type='url'], input[type='search'], input[type='date'], input[type='time'], input[type='datetime-local'], input[type='month'], input[type='week']"
 );
 inputs.forEach((input) => {
   input.addEventListener("input", async (e) => {
