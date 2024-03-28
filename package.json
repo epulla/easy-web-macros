@@ -1,7 +1,7 @@
 {
     "name": "easy-web-macro-extension",
     "description": "Record your web actions and replay them with a single click",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "type": "module",
     "repository": {
         "type": "git",

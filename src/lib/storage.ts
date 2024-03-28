@@ -61,7 +61,7 @@ export const storage = {
   // Collections functions
   hasNoCollections: async (): Promise<boolean> => {
     const storageData = await storage.get();
-    return Object.keys(storageData.collections).length === 0;
+    return !storageData.collections || Object.keys(storageData.collections).length === 0;
   },
   setActiveCollectionId: async (id: string): Promise<void> => {
     await storage.update({ activeCollectionId: id });
@@ -83,17 +83,25 @@ export const storage = {
   },
   addDefaultCollection: async (): Promise<string> => {
     const newId = uuidv4();
-    await storage.update({
-      collections: {
-        ...(await storage.getCollections()),
-        [newId]: getDefaultCollection(
-          newId,
-          `New Collection ${
-            Object.keys(await storage.getCollections()).length + 1
-          }`
-        ),
-      },
-    });
+    if (await storage.hasNoCollections()) {
+      await storage.update({
+        collections: {
+          [newId]: getDefaultCollection(newId, "New Collection 1"),
+        },
+      });
+    } else {
+      await storage.update({
+        collections: {
+          ...(await storage.getCollections()),
+          [newId]: getDefaultCollection(
+            newId,
+            `New Collection ${
+              Object.keys(await storage.getCollections()).length + 1
+            }`
+          ),
+        },
+      });
+    }
     return newId;
   },
   updateDelayBetweenSteps: async (id: string, delay: number) => {
