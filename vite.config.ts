@@ -5,6 +5,10 @@ import manifest from "./src/manifest.config";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    /*
+        If this error appears: [crx:web-accessible-resources] TypeError: OutputBundle["manifest.json"] is undefined.
+        Check this thread: https://github.com/crxjs/chrome-extension-tools/issues/836
+    */
     plugins: [svelte(), crx({ manifest })],
     // HACK: https://github.com/crxjs/chrome-extension-tools/issues/696
     // https://github.com/crxjs/chrome-extension-tools/issues/746
