@@ -43,7 +43,7 @@ export const storage = {
         chrome.storage.local.set({ ...data, ...value }, () => {
           if (chrome.runtime.lastError) {
             reject(chrome.runtime.lastError);
-            log("error storage.update", chrome.runtime.lastError)
+            log("error storage.update", chrome.runtime.lastError);
           } else {
             resolve();
             chrome.storage.local
@@ -58,10 +58,22 @@ export const storage = {
     const storageData = await storage.get();
     return Object.keys(storageData).length === 0;
   },
+  hasMissingKeys: async (): Promise<boolean> => {
+    const storageData = await storage.get();
+    return (
+      Object.keys(storageData).length !== Object.keys(defaultStorage).length
+    );
+  },
+  updateMissingKeys: async (): Promise<void> => {
+    await storage.set({ ...(await storage.get()), ...defaultStorage });
+  },
   // Collections functions
   hasNoCollections: async (): Promise<boolean> => {
     const storageData = await storage.get();
-    return !storageData.collections || Object.keys(storageData.collections).length === 0;
+    return (
+      !storageData.collections ||
+      Object.keys(storageData.collections).length === 0
+    );
   },
   setActiveCollectionId: async (id: string): Promise<void> => {
     await storage.update({ activeCollectionId: id });
@@ -204,7 +216,7 @@ export const storage = {
       });
     } else if (
       replaceLastStep &&
-      collection.steps[collection.steps.length - 1].xpath === step.xpath
+      collection.steps[collection.steps.length - 1]?.xpath === step.xpath
     ) {
       const rep = collection.steps.slice(0, collection.steps.length - 1);
       await storage.update({

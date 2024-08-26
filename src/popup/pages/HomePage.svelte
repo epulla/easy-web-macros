@@ -54,6 +54,9 @@
     if (await storage.isUndefined()) {
       await storage.set(defaultStorage);
     }
+    if (await storage.hasMissingKeys()) {
+      await storage.updateMissingKeys();
+    }
     if (await storage.hasNoCollections()) {
       const newId = await storage.addDefaultCollection();
       await storage.setActiveCollectionId(newId);
@@ -359,7 +362,13 @@
             {#each getStrategy(strategy).required as { name, label, placeholder, type, required }}
               {#if type === "text"}
                 <label for={name}>{label}</label>
-                <Input id={name} {name} {placeholder} {type} required={required ?? true} />
+                <Input
+                  id={name}
+                  {name}
+                  {placeholder}
+                  {type}
+                  required={required ?? true}
+                />
               {:else if type === "checkbox"}
                 <div class="flex gap-2">
                   <label for={name}>{label}</label>

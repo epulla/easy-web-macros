@@ -1,5 +1,4 @@
 // reference: https://stackoverflow.com/questions/2661818/javascript-get-xpath-of-a-node
-
 export const createXPathFromElement = (elm: HTMLElement, skipIdSearch: boolean = false) => {
   var allNodes = document.getElementsByTagName("*");
   for (
