@@ -7,7 +7,7 @@
   import { push } from "svelte-spa-router";
   import PopupHeader from "../../components/headers/PopupHeader.svelte";
   import ArrowLeftIcon from "../../components/icons/ArrowLeftIcon.svelte";
-  import { getDefaultInitialStep, type Step } from "../../lib/step";
+  import { type Step } from "../../lib/step";
   import {
     strategies,
     type StepStrategyKeys,
@@ -215,7 +215,7 @@
       visibility:
         isConfidential === "on"
           ? "hidden"
-          : "visible" ?? originalStep.visibility,
+          : "visible",
       label: (formData.get("label") as string) ?? originalStep.label,
       value: (formData.get("value") as string) ?? originalStep.value,
     } as Step;
@@ -237,7 +237,7 @@
   };
 </script>
 
-<div class="min-w-[500px] min-h-[200px]">
+<div class="min-w-[600px] min-h-[200px]">
   <PopupHeader>
     <button
       on:click={async () => {
