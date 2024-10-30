@@ -1,5 +1,4 @@
 import { type StepStrategyKeys } from "./strategies";
-import { v4 as uuidv4 } from 'uuid';
 
 export interface Step {
   id: string;
@@ -11,18 +10,6 @@ export interface Step {
   value?: string;
   error?: string; // any error message
 }
-
-export const getDefaultInitialStep = (initialDefaultPage: string): Step => {
-  return {
-    id: uuidv4(),
-    strategy: "Goto",
-    value: initialDefaultPage,
-    status: "idle",
-    visibility: "visible",
-    xpath: "",
-    label: "",
-  };
-};
 
 export const getStepValueFromKey = (key: string, step: Step) => {
   if (!Object.keys(step).includes(key)) {
