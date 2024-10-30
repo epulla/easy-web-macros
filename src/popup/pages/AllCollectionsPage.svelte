@@ -104,7 +104,7 @@
 </script>
 
 <PopupHeader />
-<div class="min-w-[375px] px-4 text-sm">
+<div class="min-w-[600px] min-h-[200px] px-4 text-sm">
   <Container>
     <section id="title" class="pb-2">
       <h2 class="text-lg">Select a Collection:</h2>
